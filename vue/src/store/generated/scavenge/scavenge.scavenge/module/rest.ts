@@ -20,6 +20,12 @@ export interface RpcStatus {
   details?: ProtobufAny[];
 }
 
+export type ScavengeMsgCommitSolutionResponse = object;
+
+export type ScavengeMsgRevealSolutionResponse = object;
+
+export type ScavengeMsgSubmitScavengeResponse = object;
+
 /**
  * Params defines the parameters for the module.
  */
