@@ -25,7 +25,7 @@ func (k msgServer) CommitSolution(goCtx context.Context, msg *types.MsgCommitSol
 	// 2. We define the index as SolutionScavengerHash.
 	// By using this index, we'll try to get the commit object
 	// If it's found, it means that commit already exists in store
-	_, isFound := k.GetScavenge(ctx, commit.SolutionScavengerHash)
+	_, isFound := k.GetCommit(ctx, commit.SolutionScavengerHash)
 
 	if isFound {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "Commit with that hash already exists!")
