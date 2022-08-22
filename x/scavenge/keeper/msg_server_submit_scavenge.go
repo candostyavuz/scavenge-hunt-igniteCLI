@@ -10,6 +10,11 @@ import (
 	"github.com/tendermint/tendermint/crypto"
 )
 
+// Tasks:
+// 1. Check that a scavenge with a given solution hash doesn't exist
+// 2. Send tokens from the scavenge creator account to a module account
+// 3. Write the scavenge to the store
+
 func (k msgServer) SubmitScavenge(goCtx context.Context, msg *types.MsgSubmitScavenge) (*types.MsgSubmitScavengeResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
