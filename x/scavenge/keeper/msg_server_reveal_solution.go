@@ -1,3 +1,5 @@
+// x/scavenge/keeper/msg_server_reveal_solution.go
+
 package keeper
 
 import (
@@ -5,30 +7,23 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 
-	"scavenge/x/scavenge/types"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/tendermint/tendermint/crypto"
-)
 
-// Tasks:
-// 1. Check that a commit with a given hash exists in the store
-// 2. Check that a scavenge with a given solution hash exists in the store
-// 3. Check that the scavenge hasn't already been solved
-// 4. Send tokens from the module account to the account that revealed the correct anwer
-// 5. Write the updated scavenge to the store
+	"scavenge/x/scavenge/types"
+)
 
 func (k msgServer) RevealSolution(goCtx context.Context, msg *types.MsgRevealSolution) (*types.MsgRevealSolutionResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	// concatenate the solution and the scavenger address and convert it into bytes
+	// concatenate a solution and a scavenger address and convert it to bytes
 	var solutionScavengerBytes = []byte(msg.Solution + msg.Creator)
 
 	// find the hash of solution and address
 	var solutionScavengerHash = sha256.Sum256(solutionScavengerBytes)
 
-	// convert the hash into string
+	// convert the hash to a string
 	var solutionScavengerHashString = hex.EncodeToString(solutionScavengerHash[:])
 
 	// try getting a commit using the the hash of solution and address
@@ -46,8 +41,9 @@ func (k msgServer) RevealSolution(goCtx context.Context, msg *types.MsgRevealSol
 	var solutionHashString = hex.EncodeToString(solutionHash[:])
 	var scavenge types.Scavenge
 
-	// get a scavenge from the store using the solution hash
+	// get a scavenge from the stre using the solution hash
 	scavenge, isFound = k.GetScavenge(ctx, solutionHashString)
+
 	// return an error if the solution doesn't exist
 	if !isFound {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "Scavenge with that solution hash doesn't exists")
@@ -55,10 +51,14 @@ func (k msgServer) RevealSolution(goCtx context.Context, msg *types.MsgRevealSol
 
 	// check that the scavenger property contains a valid address
 	_, err := sdk.AccAddressFromBech32(scavenge.Scavenger)
+
 	// return an error if a scavenge has already been solved
 	if err == nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "Scavenge has already been solved")
 	}
+
+	// save the scavebger address to the scavenge
+	scavenge.Scavenger = msg.Creator
 
 	// save the correct solution to the scavenge
 	scavenge.Solution = msg.Solution
@@ -66,7 +66,7 @@ func (k msgServer) RevealSolution(goCtx context.Context, msg *types.MsgRevealSol
 	// get address of the module account
 	moduleAcct := sdk.AccAddress(crypto.AddressHash([]byte(types.ModuleName)))
 
-	// convert the message creator address from a string into sdk.AccAddress
+	// convert scavenger address from string to sdk.AccAddress
 	scavenger, err := sdk.AccAddressFromBech32(scavenge.Scavenger)
 	if err != nil {
 		panic(err)
